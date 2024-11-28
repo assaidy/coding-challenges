@@ -1,11 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
-	"strings"
 	"unicode"
-	"unicode/utf8"
 )
 
 type FileMetadata struct {
@@ -87,37 +87,37 @@ func mustGetFile(filePath string) *os.File {
 
 func getFileMetadata(f *os.File) *FileMetadata {
 	var (
-		buf     = make([]byte, 30*1024)
+		reader  = bufio.NewReader(f)
 		byteCnt = 0
 		charCnt = 0
 		wordCnt = 0
 		lineCnt = 0
-		token   = ""
+		inWord  = false
 	)
 
 	for {
-		n, _ := f.Read(buf)
-		if n == 0 {
-			break
-		}
-		chunk := buf[:n]
-		byteCnt += n
-		charCnt += utf8.RuneCount(chunk)
-		lineCnt += strings.Count(string(chunk), "\n")
-		// count words
-		for _, c := range string(chunk) {
-			if unicode.IsSpace(c) {
-				if token != "" {
-					wordCnt++
-					token = ""
-				}
-			} else {
-				token += string(c)
+		r, sz, err := reader.ReadRune()
+		if err != nil {
+			if err == io.EOF {
+				break
 			}
+			panic(err)
 		}
-	}
-	if token != "" {
-		wordCnt++
+
+		byteCnt += sz
+		charCnt += 1
+
+		if unicode.IsSpace(r) {
+			if inWord {
+				wordCnt++
+				inWord = false
+			}
+			if r == '\n' {
+				lineCnt++
+			}
+		} else {
+			inWord = true
+		}
 	}
 
 	return &FileMetadata{
