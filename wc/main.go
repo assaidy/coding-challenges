@@ -18,7 +18,7 @@ type FileMetadata struct {
 func main() {
 	args := os.Args[1:]
 
-	if len(args) < 1 {
+	if len(args) == 0 || len(args) > 2 {
 		fmt.Fprintf(os.Stderr, "invalid argument.\n")
 		printUsage()
 		os.Exit(1)
@@ -60,10 +60,6 @@ func main() {
 			printUsage()
 			os.Exit(1)
 		}
-	} else {
-		fmt.Fprintf(os.Stderr, "invalid argument.\n")
-		printUsage()
-		os.Exit(1)
 	}
 }
 
