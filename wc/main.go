@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"unicode"
 )
 
@@ -64,16 +65,18 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Println("\nUsage:")
-	fmt.Println("./ccwc <OPTION> <FILE>")
-	fmt.Println("   print file data for the specified option.")
-	fmt.Println("./ccwc <FILE>")
-	fmt.Println("   print file data equivalent to the -c, -l and -w options.")
-	fmt.Println("\nOPTIONs:")
-	fmt.Println("    -c    print byte count")
-	fmt.Println("    -m    print char count")
-	fmt.Println("    -w    print word count")
-	fmt.Println("    -l    print line count")
+	lines := []string{
+		"\nUsage:",
+		"%s <OPTION> <FILE>", os.Args[0],
+		"   print file data for the specified option.",
+		"%s <FILE>", os.Args[0],
+		"   print file data equivalent to the -c, -l and -w options.",
+		"\nOPTIONs:",
+		"    -c    print byte count",
+		"    -m    print char count",
+		"    -w    print word count",
+	}
+	fmt.Println(strings.Join(lines, "\n"))
 }
 
 func mustGetFile(filePath string) *os.File {
@@ -85,7 +88,7 @@ func mustGetFile(filePath string) *os.File {
 	return file
 }
 
-func getFileMetadata(f *os.File) *FileMetadata {
+func getFileMetadata(f *os.File) FileMetadata {
 	var (
 		reader  = bufio.NewReader(f)
 		byteCnt = 0
@@ -120,7 +123,7 @@ func getFileMetadata(f *os.File) *FileMetadata {
 		}
 	}
 
-	return &FileMetadata{
+	return FileMetadata{
 		ByteCnt: uint(byteCnt),
 		CharCnt: uint(charCnt),
 		WordCnt: uint(wordCnt),
